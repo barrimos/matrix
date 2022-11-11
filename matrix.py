@@ -179,12 +179,15 @@ def transpose(matrix):
     return transpose_matrix
 
 
-def addPadding(matrix, kernel, padding):
+def addPadding(matrix, kernel, edge = False, padding = 0):
     kernel_size_rows = len(kernel)
     matrix_size_rows = len(matrix)
     matrix_size_cols = len(matrix[0])
 
-    padding_size = (kernel_size_rows - 1) // 2 or padding
+    if edge:
+        padding_size = padding or (kernel_size_rows - 1) // 2
+    else:
+        padding_size = padding
     zero_padding = [0] * matrix_size_cols
 
     # add rows
@@ -207,8 +210,6 @@ def convolution(matrix, kernel, edge = False, stride = 1, padding = 0):
 
     p = 0 or padding
     s = stride or 1
-    input_matrix_rows = len(matrix)
-    input_matrix_cols = len(matrix[0])
     input_kernel_rows = len(kernel)
     input_kernel_cols = len(kernel[0])
 
@@ -222,12 +223,12 @@ def convolution(matrix, kernel, edge = False, stride = 1, padding = 0):
         else: addPadding(matrix, kernel, p)
     else:
         # if dimension of matrix smaller than kernel filter
-        if input_matrix_rows + (2 * p) < input_kernel_rows or input_matrix_cols + (2 * p) < input_kernel_cols:
+        if len(matrix) + (2 * p) < input_kernel_rows or len(matrix[0]) + (2 * p) < input_kernel_cols:
             addPadding(matrix, kernel, p)
 
-    # update constant value
     input_matrix_cols = len(matrix[0])
     input_matrix_rows = len(matrix)
+
     if not isSquareMatrix(kernel): addzeros(kernel)
     if not isSquareMatrix(matrix): addzeros(matrix)
 
@@ -486,5 +487,5 @@ if __name__ == "__main__":
 
 
     print("[", end = "\n")
-    print(*convolution(sm, yg), sep = "\n", end = "\n")
+    print(*addPadding(sm, yg, True), sep = "\n", end = "\n")
     print("]")
