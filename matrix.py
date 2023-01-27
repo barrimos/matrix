@@ -1,4 +1,5 @@
 import random
+import re
 
 class Matrix:
     def __init__(self, name, is_randoms = False, rows = 3, cols = 3, nums = 0) -> None:
@@ -127,7 +128,7 @@ def squareMatrix(matrix):
 # # Generate matrix to identity matrix.
 def identity(matrix):
     # Identity matrix shound be square matrix
-    if not isSquareMatrix(matrix): return "The matrix is not square."
+    if not isSquareMatrix(matrix): return ["The matrix is not square."]
     size = maxDimension(squareMatrix(matrix))
 
     identity_matrix = [[1 if i == j else 0 for j in range(size)] for i in range(size)]
@@ -139,7 +140,7 @@ def plus_minus(matrixA, matrixB, operator):
     plus, (+), p or minus, (-), m
     """
     # Check the matrix size is equal
-    if not isMatrixEqual(matrixA, matrixB, "plusminus"): return "1st matrix is NOT EQUAL to 2nd matrix"
+    if not isMatrixEqual(matrixA, matrixB, "plusminus"): return ["1st matrix is NOT EQUAL to 2nd matrix"]
 
     res_matrix = [[0 for j in range(len(matrixA[0]))] for i in range(len(matrixA))]
 
@@ -206,7 +207,7 @@ def addPadding(matrix, kernel, edge = False, padding = 0):
     return matrix
 
 def convolution(matrix, kernel, edge = False, stride = 1, padding = 0):
-    if isinstance(padding, int) and padding < 0: return "Padding parameter should be whole number"
+    if isinstance(padding, int) and padding < 0: return ["Padding parameter should be whole number"]
 
     p = 0 or padding
     s = stride or 1
@@ -219,7 +220,7 @@ def convolution(matrix, kernel, edge = False, stride = 1, padding = 0):
     k_c_odd = input_kernel_cols % 2 == 1
     if edge:
         if k_r_odd != k_c_odd:
-            return "Kernel is not odd-size"
+            return ["Kernel is not odd-size"]
         else: addPadding(matrix, kernel, p)
     else:
         # if dimension of matrix smaller than kernel filter
@@ -263,8 +264,11 @@ def multiply(matrixA, matrixB):
     matrixA = addzeros(matrixA)
     matrixB = addzeros(matrixB)
 
+    # If complex number
+    complex_number = False
+
     # Check if multiplication is Possible.
-    if not isMatrixEqual(matrixA, matrixB, "multiply"): return "Rows of 1st matrix is NOT EQUAL to Columns of 2nd matrix"
+    if not isMatrixEqual(matrixA, matrixB, "multiply"): return ["Rows of 1st matrix is NOT EQUAL to Columns of 2nd matrix"]
 
     # Create zero matrix to store result matrix based on number row of 1st matrix with number column of 2nd matrix
     multiply_matrix = [[0 for i in range(len(matrixB[0]))] for z in range(len(matrixA))]
@@ -272,14 +276,52 @@ def multiply(matrixA, matrixB):
     for i in range(len(matrixA)):
         for j in range(len(matrixB[0])):
             for k in range(len(matrixB)):
+                
+                if type(matrixA[i][k]) == str:
+                    if matrixA[i][k].isdigit():
+                        matrixA[i][k] = int(matrixA[i][k])
+                if type(matrixB[k][j]) == str:
+                    if matrixB[k][j].isdigit():
+                        matrixB[k][j] = int(matrixB[k][j])
+
+                if type(multiply_matrix[i][j]) == str or type(matrixA[i][k]) == str or type(matrixB[k][j]) == str:
+                    if ~complex_number:
+                        complex_number = True
+                    if multiply_matrix[i][j] == 0:
+                        multiply_matrix[i][j] = str(matrixA[i][k]) + str(matrixB[k][j])
+                    else:
+                        if type(matrixA[i][k]) == int and type(matrixB[k][j]) == int:
+                            multiply_matrix[i][j] = str(multiply_matrix[i][j]) + " + " + str(matrixA[i][k] * matrixB[k][j])
+                        else:
+                            multiply_matrix[i][j] = str(multiply_matrix[i][j]) + " + " + str(matrixA[i][k]) + str(matrixB[k][j])
+                    continue
+
                 multiply_matrix[i][j] += matrixA[i][k] * matrixB[k][j]
+
+            if complex_number:
+                if type(multiply_matrix[i][j]) == str:
+                    rs = multiply_matrix[i][j].split(" ")
+                    c = 0
+                    res = []
+                    sum = 0
+                    for k in rs:
+                        if k.isdigit():
+                            rs[c] = int(k)
+                            sum += rs[c]
+                        elif k != "+":
+                            res.append(rs[c])
+                        c += 1
+                    if sum != 0:
+                        res.append(str(sum))
+                    res = " + ".join(res)
+                    multiply_matrix[i][j] = res
 
     return multiply_matrix
 
 def determinant(matrix):
     # use Bareiss algorithm
     # determinant matrix should be square
-    if not isSquareMatrix(matrix): return "The matrix is not square."
+    if not isSquareMatrix(matrix): return ["The matrix is not square."]
 
     # the value of the support element in the previous step
     prev_sup_val = 1
@@ -354,8 +396,8 @@ def minor_cofactor(matrix, posI, posJ, sel = "m"):
     select = ["m", "c"]
 
     if sel not in select: return "m or c"
-    if not isSquareMatrix(matrix): return "The matrix is not square."
-    if posI not in range(rows) or posJ not in range(cols): return f"Out of range of rows or cols.\nProperties of the matrix is\n{checkProps(matrix)}"
+    if not isSquareMatrix(matrix): return ["The matrix is not square."]
+    if posI not in range(rows) or posJ not in range(cols): return [f"Out of range of rows or cols.\nProperties of the matrix is\n{checkProps(matrix)}"]
     
     # Copy the matrix to avoid damaging the original matrix.
     # because parameter of matrix is reference to orginal
@@ -366,40 +408,167 @@ def minor_cofactor(matrix, posI, posJ, sel = "m"):
     for i in range(dummy_matrix_rows):
         if i == posI:
             del dummy_matrix[i]
+            break
     for j in dummy_matrix:
         del j[posJ]
 
-    result = determinant(dummy_matrix) if sel == "m" else (-1)**(posI + posJ) * determinant(dummy_matrix)
+    det = determinant(dummy_matrix)
+
+    result = det if sel == "m" else (-1)**(posI + posJ) * det
     return result
 
 
-def triangular(matrix, dir):
+def triangular(matrix, dir = 1):
+    """
+    dir:\n
+    1 is lower triangular\n
+    -1 is upper triangular
+    """
+
+    if dir not in [1, -1]:
+        return ["dir argument is wrong it's must to be 1 or -1"]
+
+    # [0 -1 -2]
+    # [1 0 -1]
+    # [2 1 0]
+    
+    # [[0, 0], [0, 1], [0, 2]]
+    # [[1, 0], [1, 1], [1, 2]]
+    # [[2, 0], [2, 1], [2, 2]]
+
     for i in range(len(matrix)):
-        for j in range(len(matrix[i])):
-            if dir == "up":
-                if j >= i:
-                    matrix[i][j] = matrix[i][j]
-                else: matrix[i][j] = 0
-            if dir == "low":
-                if j > i:
+        if dir == 1:
+            for j in range(i, len(matrix[0])):
+                if i - j < 0:
                     matrix[i][j] = 0
-                else: matrix[i][j] = matrix[i][j]
+        if dir == -1:
+            for j in range(0, i + 1):
+                if i - j > 0:
+                    matrix[i][j] = 0
+
     return matrix
 
 
-# def diagonal(matrix):
-#     return diagonal_matrix
+def diagonal(matrix):
+    diagonal_matrix = [[0 for j in range(len(matrix[0]))] for i in range(len(matrix))]
+    for i in range(len(matrix)):
+        diagonal_matrix[i][i] = matrix[i][i]
+    return diagonal_matrix
 
+# def rank(matrix):
+#     result = 0
+#     return result
+
+# def rotate(matrix, clockwise = True, k = 1):
+#     rows = len(matrix)
+#     cols = len(matrix[0])
+
+#     i = 0
+#     j = 0
+
+#     left = []
+#     top_bottom = []
+#     right = []
+
+#     return matrix
+
+def spiralOrder(matrix, clockwise = True):
+    rows = len(matrix)
+    cols = len(matrix[0])
+    ele = rows * cols
+    i = 0
+    j = 0
+    di = 0
+    ans = []
+    ring = 0
+    prev = 0
+
+    traveller = list()
+
+    while len(traveller) < ele:
+
+        if [i, j] in traveller:
+            break
+        ans.append(matrix[i][j])
+        traveller.append([i, j])
+    
+        # cur_border is number of border each ring
+        # r is order of each ring of matrix start with 0
+        cur_border = ((cols - (ring * 2)) * 2) + (((rows - (ring * 2)) - 2) * 2)
+
+        # prev is outer border number when cur_border + prev, the result should be summation of border each ring
+        if len(traveller) == cur_border + prev:
+            prev = cur_border
+            ring += 1
+
+        cr = rows - 1 - ring
+        cc = cols - 1 - ring
+
+        if clockwise:
+            if i <= cr and j < cc and i == ring:
+                j += 1
+            elif i < cr and j == cc:
+                i += 1
+            elif i == cr and j > 0 + ring:
+                j -= 1
+            elif i > 0 + ring and j == 0 + ring:
+                i -= 1
+        else:
+            if i < cr and j == 0 + ring:
+                i += 1
+            elif i == cr and j < cc:
+                j += 1
+            elif i > 0 + ring and j == cc:
+                i -= 1
+            elif i == 0 + ring and j > 0 + ring:
+                j -= 1
+
+
+
+
+        # dr = [0, 1, 0, -1] if clockwise else [1, 0, -1, 0]
+        # dc = [1, 0, -1, 0] if clockwise else [0, 1, 0, -1]
+
+        # cr = i + dr[di]
+        # cc = j + dc[di]
+
+        # if 0 <= cr and cr < rows and 0 <= cc and cc < cols and [cr, cc] not in traveller:
+        #     i = cr
+        #     j = cc
+        # else:
+        #     di = (di + 1) % 4
+        #     i += dr[di]
+        #     j += dc[di]
+
+
+    return ans
+
+def shift(matrix, rev = False, k = 1):
+    rows = len(matrix)
+
+    while k > 0:
+        if not rev:
+            for i in range(rows):
+                first = matrix[i].pop(-(len(matrix[i])))
+                matrix[i].append(first)
+        else:
+            for i in range(rows):
+                last = matrix[i].pop()
+                matrix[i].insert(0, last)
+
+        k -= 1
+
+    return matrix
 
 def inverse(matrix):
-    if not isSquareMatrix(matrix): return "The matrix is not square."
+    if not isSquareMatrix(matrix): return ["The matrix is not square."]
 
     rows = len(matrix)
     cols = maxcol(matrix)
     det_matrix = determinant(matrix)
 
     # if determinant equal 0 the matrix is not invertible
-    if det_matrix == 0: return "The determinant is 0 the matrix is not invertible."
+    if det_matrix == 0: return ["The determinant is 0 the matrix is not invertible."]
 
     # Copy matrix for storing new value
     cof_matrix = [x[:] for x in matrix]
@@ -413,7 +582,7 @@ def inverse(matrix):
 
 def trace(matrix):
     trace_matrix = 0
-    if not isSquareMatrix(matrix): return "The matrix is not square."
+    if not isSquareMatrix(matrix): return ["The matrix is not square."]
     for i in range(len(matrix)):
         trace_matrix += matrix[i][i]
     return trace_matrix
@@ -450,10 +619,10 @@ if __name__ == "__main__":
         [1]
     ]
     list_z = [
-        [1, 2, 1]
+        [1, 'v', 1]
     ]
     list_zz = [
-        [1],
+        [-2],
         [2],
         [1]
     ]
@@ -464,28 +633,27 @@ if __name__ == "__main__":
         [192, 154, 75]
     ]
     ff = [
-        [0, 1],
-        [0, 1],
+        [1, 1],
+        [1, 1],
         [2, 3]
     ]
     yg = [
-        [-2, -1, 0],
-        [-1, 1, 1],
-        [0, 1, 2]
+        [1, 1, 2],
+        [3, "v", "5x2"],
+        ["x", 7, 8]
     ]
     jyp = [
-        [0, 2, 1, 2, 0],
-        [2, 2, 4, 2, 2],
-        [1, 4, 8, 4, 1],
-        [2, 2, 4, 2, 2],
-        [0, 2, 1, 2, 0]
+        [0, 1, 2, 3, 4],
+        [5, 6, 7, 8, 9],
+        [10, 11, 12, 13, 14],
+        [15, 16, 17, 18, 19],
+        [20, 21, 22, 23, 24]
     ]
-    # convolution(sm, yg)
-    # newX = Matrix("newX", nums = 8)
-    # newX.create()
-
-
+    nn = [
+        [1, 2, 3, -1],
+        [-2, -1, -3, -1]
+    ]
 
     print("[", end = "\n")
-    print(*addPadding(sm, yg, True), sep = "\n", end = "\n")
+    print(*multiply(yg, ff), sep = "\n", end = "\n")
     print("]")
