@@ -2,7 +2,7 @@ import random
 import re
 
 class Matrix:
-  def __init__(self, name = 'unnamed', is_randoms = False, rows = 3, cols = 3, nums = 0) -> None:
+  def __init__(self, name = "unnamed", is_randoms = False, rows = 3, cols = 3, nums = 0) -> None:
     self.name = name
     self.rows = rows
     self.cols = cols
@@ -19,14 +19,14 @@ class Matrix:
         else:
           self.matrix[i].append(self.nums)
 
-# Error
-def error():
-  try:
-    pass
-  except:
-    pass
-  finally:
-    pass
+# # Error
+# def error():
+#   try:
+#     pass
+#   except:
+#     pass
+#   finally:
+#     pass
 
 # Max column
 def maxcol(matrix):
@@ -199,7 +199,7 @@ def addPadding(matrix, kernel, edge = False, padding = 0):
       matrix[i].insert(0, 0)
       matrix[i].append(0)
   matrix_size_cols = len(matrix[0])
-  
+
   return matrix
 
 def convolution(matrix, kernel, edge = False, stride = 1, padding = 0):
@@ -214,15 +214,21 @@ def convolution(matrix, kernel, edge = False, stride = 1, padding = 0):
 
   k_r_odd = input_kernel_rows % 2 == 1
   k_c_odd = input_kernel_cols % 2 == 1
+
+  matrixIsSmaller = len(matrix) + (2 * p) < input_kernel_rows or len(matrix[0]) + (2 * p) < input_kernel_cols
   if edge:
     if k_r_odd != k_c_odd:
       return ["Kernel is not odd-size"]
-    else: addPadding(matrix, kernel, padding = p)
+    else:
+      # if dimension of matrix smaller than kernel filter
+      if matrixIsSmaller:
+        addPadding(matrix, kernel, edge, padding = abs(len(matrix) + (2 * p) - input_kernel_rows))
   else:
     # if dimension of matrix smaller than kernel filter
-    if len(matrix) + (2 * p) < input_kernel_rows or len(matrix[0]) + (2 * p) < input_kernel_cols:
-      addPadding(matrix, kernel, padding = p)
+    if matrixIsSmaller:
+      return ["Matrix smaller than kernel filter then determine edge argument as True"]
 
+  # get len of matrix after add padding
   input_matrix_cols = len(matrix[0])
   input_matrix_rows = len(matrix)
 
@@ -640,9 +646,9 @@ if __name__ == "__main__":
         ["x", 7, 8]
     ]
     jyp = [
-        [0, 1, 2, 3, 4],
-        [5, 6, 7, 8, 9],
-        [10, 11, 12, 13, 14],
+        [200, 121, 452, 343, 644],
+        [504, 621, 745, 810, 109],
+        [100, 112, 122, 131, 141],
         [15, 16, 17, 18, 19],
         [20, 21, 22, 23, 24]
     ]
@@ -652,5 +658,5 @@ if __name__ == "__main__":
     ]
 
     print("[", end = "\n")
-    print(*multiply(yg, ff), sep = "\n", end = "\n")
+    print(*convolution(sm, jyp, True), sep = "\n", end = "\n")
     print("]")
