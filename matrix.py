@@ -1,5 +1,6 @@
 import random
-import re
+from fractions import Fraction
+import copy
 
 class Matrix:
   def __init__(self, name = "unnamed", is_randoms = False, rows = 3, cols = 3, nums = 0) -> None:
@@ -18,15 +19,6 @@ class Matrix:
           self.matrix[i].append(randNum)
         else:
           self.matrix[i].append(self.nums)
-
-# # Error
-# def error():
-#   try:
-#     pass
-#   except:
-#     pass
-#   finally:
-#     pass
 
 # Max column
 def maxcol(matrix):
@@ -255,11 +247,17 @@ def convolution(matrix, kernel, edge = False, stride = 1, padding = 0):
 
 
 def scalar(matrix, scalar):
-  for i in range(len(matrix)):
-    for j in range(len(matrix[i])):
-      matrix[i][j] = round(scalar * matrix[i][j], 3)
+  new_list = copy.deepcopy(matrix)
+  for i in range(len(new_list)):
+    for j in range(len(new_list[i])):
+      fraction = Fraction(int(round(scalar * new_list[i][j], 3) * 1000), 1000)
+      if (int(scalar) != scalar):
+        new_list[i][j] = [[], fraction.numerator, fraction.denominator]
+      else:
+        new_list[i][j] = int(scalar) * new_list[i][j]
+      # matrix[i][j] = round(scalar * matrix[i][j], 3)
 
-  return matrix
+  return new_list
 
 # use for exponent too
 def multiply(matrixA, matrixB):
@@ -422,14 +420,15 @@ def minor_cofactor(matrix, posI, posJ, sel = "m"):
 
 
 def triangular(matrix, dir = 1):
+  new_list = copy.deepcopy(matrix)
   """
   dir:\n
   1 is lower triangular\n
   0 is upper triangular
   """
 
-  if dir not in [1, -1]:
-    return ["dir argument is wrong it's must to be 1 or -1"]
+  if dir not in [1, 0]:
+    return ["dir argument is wrong it's must to be 1 or 0"]
 
   # [0 -1 -2]
   # [1 0 -1]
@@ -439,17 +438,17 @@ def triangular(matrix, dir = 1):
   # [[1, 0], [1, 1], [1, 2]]
   # [[2, 0], [2, 1], [2, 2]]
 
-  for i in range(len(matrix)):
+  for i in range(len(new_list)):
     if dir == 1:
-      for j in range(i, len(matrix[0])):
+      for j in range(i, len(new_list[0])):
         if i - j < 0:
-          matrix[i][j] = 0
+          new_list[i][j] = 0
     if dir == 0:
       for j in range(0, i + 1):
         if i - j > 0:
-          matrix[i][j] = 0
+          new_list[i][j] = 0
 
-  return matrix
+  return new_list
 
 
 def diagonal(matrix):
@@ -546,22 +545,22 @@ def spiralOrder(matrix, clockwise = True):
 
   return ans
 
-def shift(matrix, rev = False, k = 1):
+def shift(matrix, k = 1, rev = False):
   rows = len(matrix)
-
+  new_list = copy.deepcopy(matrix)
   while k > 0:
     if not rev:
       for i in range(rows):
-        first = matrix[i].pop(-(len(matrix[i])))
-        matrix[i].append(first)
+        first = new_list[i].pop(-(len(new_list[i])))
+        new_list[i].append(first)
     else:
       for i in range(rows):
-        last = matrix[i].pop()
-        matrix[i].insert(0, last)
+        last = new_list[i].pop()
+        new_list[i].insert(0, last)
 
     k -= 1
 
-  return matrix
+  return new_list
 
 def inverse(matrix):
   if not isSquareMatrix(matrix): return ["The matrix is not square."]
@@ -637,8 +636,8 @@ if __name__ == "__main__":
     ]
     ff = [
         [1, 1],
-        [1, 1],
-        [2, 3]
+        [1],
+        [2]
     ]
     yg = [
         [1, 1, 2],
@@ -658,5 +657,5 @@ if __name__ == "__main__":
     ]
 
     print("[", end = "\n")
-    print(*convolution(sm, jyp, True), sep = "\n", end = "\n")
+    print(*inverse([[231,416],[141,341]]), sep = "\n", end = "\n")
     print("]")
