@@ -468,6 +468,7 @@ def rotate(matrix, k = 1):
 
   rows = len(matrix)
   cols = len(matrix[0])
+  result_matrix = [x[:] for x in matrix]
 
   # term is how many steps to completely 1 round of matrix
   term = 0
@@ -508,42 +509,42 @@ def rotate(matrix, k = 1):
       # Store the first element of next row,
       # this element will replace first element of
       # current row
-      prev = matrix[top + 1][left]
+      prev = result_matrix[top + 1][left]
 
       # Move elements of top row one step right
       for i in range(left, right + 1):
-        curr = matrix[top][i]
-        matrix[top][i] = prev
+        curr = result_matrix[top][i]
+        result_matrix[top][i] = prev
         prev = curr
 
       top += 1
 
       # Move elements of rightmost column one step downwards
       for i in range(top, bottom + 1):
-        curr = matrix[i][right]
-        matrix[i][right] = prev
+        curr = result_matrix[i][right]
+        result_matrix[i][right] = prev
         prev = curr
 
       right -= 1
 
       # Move elements of bottom row one step left
       for i in range(right, left - 1, -1):
-        curr = matrix[bottom][i]
-        matrix[bottom][i] = prev
+        curr = result_matrix[bottom][i]
+        result_matrix[bottom][i] = prev
         prev = curr
 
       bottom -= 1
 
       # Move elements of leftmost column one step upwards
       for i in range(bottom, top - 1, -1):
-        curr = matrix[i][left]
-        matrix[i][left] = prev
+        curr = result_matrix[i][left]
+        result_matrix[i][left] = prev
         prev = curr
 
       left += 1
     roundLoop -= 1
 
-  return matrix
+  return result_matrix
 
 def spiralOrder(matrix, clockwise = True):
   # If matrix is not full add zeros
