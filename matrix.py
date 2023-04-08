@@ -326,27 +326,36 @@ def multiply(matrixA, matrixB):
 
 
 def bareiss(matrix, rank = False):
-  # divisor is the value of previous matrix's pivot axis, start defualt is 1 for pivot [0, 0]
+  # Divisor is the value of previous matrix's pivot axis, start defualt is 1 for pivot [0, 0]
   divisor = 1
 
-  # start pivot [0, 0]
+  # Start pivot [0, 0]
   pivot = 0
 
   # dim is minimum dimension value of matrix
-  # for rank will use minimum dimension value
-  # for determinant both of two dimension is available because rows and columns are equal
+  # For rank will use minimum dimension value
+  # For determinant both of two dimension is available because rows and columns are equal
   dim = min(len(matrix), len(matrix[0]))
   sparse_matrix = [x[:] for x in matrix]
   result_matrix = [[0 for j in i] for i in sparse_matrix]
 
   while pivot < dim:
 
+    # In-case of pivot is not last rows and current pivot is 0
     if sparse_matrix[pivot][pivot] == 0 and pivot < len(sparse_matrix) - 1:
+      # Swap between this rows and next rows
+      # If method is rank just swap
+      # If method is determinant next rows * -1 and swap
       result_matrix[pivot], result_matrix[pivot + 1] = result_matrix[pivot + 1], result_matrix[pivot] if rank else scalar([result_matrix[pivot]], -1)[0]
       if rank:
-        if result_matrix[pivot][pivot] == 0 and result_matrix[pivot + 1][pivot + 1] == 0:
+        if result_matrix[pivot][pivot] == 0:
           break
+      # Then sparse matrix
       sparse_matrix = [x[:] for x in result_matrix]
+    else:
+      # In-case of pivot is last rows and current pivot is 0
+      if result_matrix[pivot][pivot] == 0 and pivot == len(sparse_matrix) - 1:
+        break
 
     for i in range(len(sparse_matrix)):
       for j in range(len(sparse_matrix[i])):
@@ -370,8 +379,8 @@ def bareiss(matrix, rank = False):
 
 
 def determinant(matrix):
-  # use Bareiss algorithm
-  # matrix should be square
+  # Use Bareiss algorithm
+  # Matrix should be square
   if not isSquareMatrix(matrix): return ["The matrix is not square."]
 
   [det_matrix, det_value] = bareiss(matrix)
@@ -393,7 +402,7 @@ def minor_cofactor(matrix, posI, posJ, sel = "m"):
   if posI not in range(rows) or posJ not in range(cols): return [f"Out of range of rows or cols.\nProperties of the matrix is\n{checkProps(matrix)}"]
   
   # Copy the matrix to avoid damaging the original matrix.
-  # because parameter of matrix is reference to orginal
+  # Because parameter of matrix is reference to orginal
   dummy_matrix = [x[:] for x in matrix]
   dummy_matrix_rows = len(dummy_matrix)
 
@@ -479,10 +488,10 @@ def rotate(matrix, k = 1):
   else:
     term = ((rows - 2) * 4) + 4
 
-  # modulo steps with term
+  # Modulo steps with term
   roundLoop = abs(k) % term
   
-  # if round step is 0 or equals to term return original matrix
+  # If round step is 0 or equals to term return original matrix
   if roundLoop == term or roundLoop == 0:
     return matrix
 
@@ -507,8 +516,8 @@ def rotate(matrix, k = 1):
     while left < right and top < bottom:
       # count += 1
       # Store the first element of next row,
-      # this element will replace first element of
-      # current row
+      # This element will replace first element of
+      # Current row
       prev = result_matrix[top + 1][left]
 
       # Move elements of top row one step right
@@ -571,7 +580,7 @@ def spiralOrder(matrix, clockwise = True):
     traveller.append([i, j])
 
     # cur_border is number of border each ring
-    # r is order of each ring of matrix start with 0
+    # ring is order of each ring of matrix start with 0
     cur_border = ((cols - (ring * 2)) * 2) + (((rows - (ring * 2)) - 2) * 2)
 
     # prev is outer border number when cur_border + prev, the result should be summation of border each ring
@@ -657,7 +666,7 @@ def inverse(matrix):
   cols = maxcol(matrix)
   det_matrix = determinant(matrix)
 
-  # if determinant equal 0 the matrix is not invertible
+  # If determinant equal 0 the matrix is not invertible
   if det_matrix == 0: return ["The determinant is 0 the matrix is not invertible."]
 
   # Copy matrix for storing new value
@@ -724,8 +733,8 @@ if __name__ == "__main__":
         [5, 4, 3, 2],
     ]
     ff = [
-        [1, 1],
-        [1, 2]
+        [2, 5],
+        [2, 7],
     ]
     yg = [
         [1, 1, 2],
@@ -751,5 +760,5 @@ if __name__ == "__main__":
     ]
 
     print("[", end = "\n")
-    print(*shift(sm, -5), sep = "\n", end = "\n")
+    print(*rank(ff), sep = "\n", end = "\n")
     print("]")
